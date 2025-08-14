@@ -38,7 +38,7 @@ function generateRandomString(length) {
 }
 
 // Login endpoint
-app.get('/login', (req, res) => {
+app.get('/api/login', (req, res) => {
     const state = generateRandomString(16);
     res.cookie(stateKey, state);
 
