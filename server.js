@@ -55,7 +55,7 @@ app.get('/api/login', (req, res) => {
 });
 
 // Callback endpoint
-app.get('/callback', async (req, res) => {
+app.get('/api/callback', async (req, res) => {
     const code = req.query.code || null;
     const state = req.query.state || null;
     const storedState = req.cookies ? req.cookies[stateKey] : null;
