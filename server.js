@@ -14,7 +14,7 @@ const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 console.log('CLIENT_ID:', CLIENT_ID);
 console.log('CLIENT_SECRET:', CLIENT_SECRET);
-const REDIRECT_URI = 'http://localhost:3000/callback';
+const REDIRECT_URI = 'https://hitster-t9wo.vercel.app/callback';
 
 const app = express();
 app.use(cors());
