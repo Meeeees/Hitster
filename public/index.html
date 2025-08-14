@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitster Clone with Spotify Web Playback</title>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --spotify-green: #1db954;
+            --spotify-black: #191414;
+            --spotify-white: #ffffff;
+            --gradient-start: #1ed760;
+            --gradient-end: #1db954;
+            --accent-color: #ff6b6b;
+            --text-light: #f8f9fa;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: var(--spotify-white);
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/dark-denim-3.png');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            background: rgba(25, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--spotify-white), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+        }
+
+        .login-btn {
+            display: inline-block;
+            background: var(--spotify-white);
+            color: var(--spotify-black);
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background: #f0f0f0;
+        }
+
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+
+        #reader {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto 2rem;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        #reader:hover {
+            transform: scale(1.02);
+        }
+
+        #playPause {
+            background: var(--spotify-white);
+            color: var(--spotify-green);
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #playPause::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        #playPause:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #playPause:hover::before {
+            left: 100%;
+        }
+
+        #playPause:active {
+            transform: translateY(1px);
+        }
+
+        .music-note {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.1;
+            animation: float 5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+
+        .note-1 {
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .note-2 {
+            top: 70%;
+            left: 10%;
+            animation-delay: 1s;
+        }
+
+        .note-3 {
+            top: 30%;
+            right: 8%;
+            animation-delay: 2s;
+        }
+
+        .note-4 {
+            bottom: 10%;
+            right: 5%;
+            animation-delay: 1.5s;
+        }
+
+        .status {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 300;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating music notes -->
+    <div class="music-note note-1">♪</div>
+    <div class="music-note note-2">♫</div>
+    <div class="music-note note-3">♪</div>
+    <div class="music-note note-4">♫</div>
+
+    <div class="container">
+        <h1>Hitster Music Player</h1>
+        <p class="subtitle">Scan a card to play your favorite songs instantly</p>
+
+        <a href="/login" class="login-btn">Connect with Spotify</a>
+
+        <div id="reader"></div>
+
+        <button id="playPause">Play/Pause</button>
+
+        <p class="status">Ready to scan...</p>
+    </div>
+
+    <script>
+        let token = null;
+        const hashParams = {};
+        window.location.hash.substring(1).split('&').forEach(item => {
+            const [key, value] = item.split('=');
+            hashParams[key] = decodeURIComponent(value);
+        });
+        token = hashParams.access_token;
+
+        let player;
+        let deviceId;
+
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            player = new Spotify.Player({
+                name: 'Hitster Web Player',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.8
+            });
+
+            player.addListener('ready', ({ device_id }) => {
+                deviceId = device_id;
+                console.log('Ready with Device ID', device_id);
+                updateStatus('Ready to scan QR codes!');
+
+                const html5QrCode = new Html5Qrcode("reader");
+                const qrCodeSuccessCallback = (decodedText) => {
+                    onScanSuccess(decodedText);
+                };
+
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                };
+
+                // Start both front and back cameras
+                Html5Qrcode.getCameras().then(devices => {
+                    if (devices && devices.length) {
+                        const cameraId = devices[0].id; // Use first available camera
+                        html5QrCode.start(
+                            cameraId,
+                            config,
+                            qrCodeSuccessCallback
+                        ).catch(err => {
+                            console.error("Camera start error:", err);
+                            updateStatus("Camera error - please allow access");
+                        });
+                    }
+                }).catch(err => {
+                    console.error("Camera access error:", err);
+                    updateStatus("Cannot access camera - check permissions");
+                });
+            });
+
+            player.addListener('player_state_changed', state => {
+                if (!state) return;
+                const paused = state.paused;
+                document.getElementById('playPause').textContent = paused ? 'Play' : 'Pause';
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error('Initialization Error:', message);
+                updateStatus('Error initializing player');
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error('Authentication Error:', message);
+                updateStatus('Authentication error - please reconnect');
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error('Account Error:', message);
+                updateStatus('Account error - check your subscription');
+            });
+
+            player.connect();
+        };
+
+        function updateStatus(message) {
+            document.querySelector('.status').textContent = message;
+        }
+
+        function onScanSuccess(decodedText) {
+            console.log(`Code matched = ${decodedText}`);
+            updateStatus('Loading track...');
+
+            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ uris: [decodedText] }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Playback started successfully');
+                    } else {
+                        console.error('Error starting playback:', response.statusText);
+                        updateStatus('Error playing track');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting playback:', error);
+                    updateStatus('Connection error');
+                });
+        }
+
+        // Play/Pause button
+        const playPauseBtn = document.getElementById('playPause');
+        playPauseBtn.addEventListener('click', () => {
+            if (!player) {
+                updateStatus('Player not ready yet');
+                return;
+            }
+            player.togglePlay();
+        });
+    </script>
+</body>
+
+</html>
